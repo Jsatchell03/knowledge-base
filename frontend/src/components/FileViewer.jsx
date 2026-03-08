@@ -23,7 +23,7 @@ export default function FileViewer({ file }) {
     <div className="h-full flex items-center justify-center p-8">
       <div className="bg-white border border-gray-200 rounded-lg p-8 max-w-md w-full text-center">
         <div className="text-5xl mb-4">
-          {file.contentType.includes("/image")
+          {file.contentType.includes("image/")
             ? "🖼"
             : file.contentType.includes("/pdf")
               ? "📄"

@@ -6,6 +6,7 @@ import { embed } from "./embeddingService.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const llm = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+const goodLlm = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 async function queryKnowledgeBase(text) {
   // 1. Embed the query
@@ -46,7 +47,6 @@ async function queryKnowledgeBase(text) {
     "You are a helpful assistant for a personal knowledge base.",
     "Answer the user's question using ONLY the context below.",
     "If the context does not contain enough information, say so.",
-    "Keep your response concise — it will be read aloud via text-to-speech.",
     "",
     "--- Context ---",
     contextBlocks,
@@ -56,7 +56,7 @@ async function queryKnowledgeBase(text) {
   ].join("\n");
 
   // 5. Generate response
-  const result = await llm.generateContent(prompt);
+  const result = await goodLlm.generateContent(prompt);
   return result.response.text();
 }
 
