@@ -1,63 +1,89 @@
-import { sampleNotes, sampleFiles } from '../data/sampleData';
-
-let notes = [...sampleNotes];
-let files = [...sampleFiles];
-
-function delay(ms = 400) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const BASE_URL = "http://localhost:3000";
 
 export async function fetchNotes() {
-  await delay();
-  return [...notes];
+  const res = await fetch(`${BASE_URL}/notes`);
+  if (!res.ok) throw new Error("Failed to fetch notes");
+  return res.json();
 }
 
 export async function fetchFiles() {
-  await delay();
-  return [...files];
+  const res = await fetch(`${BASE_URL}/files`);
+  if (!res.ok) throw new Error("Failed to fetch files");
+  return res.json();
+}
+
+export async function fetchNote(id) {
+  const res = await fetch(`${BASE_URL}/notes/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch note");
+  let json = await res.json();
+  console.log(json);
+  return json;
 }
 
 export async function createNote(note) {
-  await delay();
-  const now = new Date().toISOString();
-  const newNote = {
-    id: Date.now().toString(),
-    title: note.title ?? 'Untitled',
-    content: note.content ?? '',
-    createdAt: now,
-    updatedAt: now,
-  };
-  notes = [newNote, ...notes];
-  return newNote;
+  const res = await fetch(`${BASE_URL}/notes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(note),
+  });
+  if (!res.ok) throw new Error("Failed to create note");
+  return res.json();
 }
 
 export async function updateNote(id, updates) {
-  await delay();
-  const idx = notes.findIndex((n) => n.id === id);
-  if (idx === -1) throw new Error(`Note ${id} not found`);
-  notes[idx] = { ...notes[idx], ...updates, updatedAt: new Date().toISOString() };
-  return { ...notes[idx] };
+  const res = await fetch(`${BASE_URL}/notes/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error("Failed to update note");
+  return res.json();
 }
 
 export async function deleteNote(id) {
-  await delay();
-  notes = notes.filter((n) => n.id !== id);
+  const res = await fetch(`${BASE_URL}/notes/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete note");
 }
 
-export async function addFile(fileMeta) {
-  await delay();
-  const newFile = {
-    id: Date.now().toString(),
-    name: fileMeta.name,
-    size: fileMeta.size,
-    type: fileMeta.type,
-    createdAt: new Date().toISOString(),
-  };
-  files = [newFile, ...files];
-  return newFile;
+export async function addFile(file) {
+  console.log("[api.addFile] Building FormData for:", file.name);
+  const formData = new FormData();
+  formData.append("file", file);
+  try {
+    console.log("[api.addFile] Sending POST to", `${BASE_URL}/files`);
+    const res = await fetch(`${BASE_URL}/files`, {
+      method: "POST",
+      body: formData,
+    });
+    console.log("[api.addFile] Response status:", res.status);
+    if (!res.ok) {
+      const body = await res.text();
+      console.error("[api.addFile] Upload failed:", res.status, body);
+      throw new Error("Failed to upload file");
+    }
+    const json = await res.json();
+    console.log("[api.addFile] Upload success:", json);
+    return json;
+  } catch (err) {
+    console.error("[api.addFile] Error:", err);
+    throw err;
+  }
 }
 
-export async function deleteFile(id) {
-  await delay();
-  files = files.filter((f) => f.id !== id);
+export async function deleteFile(name) {
+  const res = await fetch(`${BASE_URL}/files/${encodeURIComponent(name)}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete file");
+}
+
+export async function queryAI(text) {
+  const res = await fetch(`${BASE_URL}/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error("Failed to query AI");
+  const data = await res.json();
+  return data.response;
 }

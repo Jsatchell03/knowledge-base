@@ -45,12 +45,13 @@ const PLUGINS = [
 export default function NoteEditor({ note }) {
   const { updateNote } = useNotes();
   const [localTitle, setLocalTitle] = useState(note.title);
-  const [localContent, setLocalContent] = useState(note.content);
+  const [localContent, setLocalContent] = useState(note.content_markdown);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
   const handleChange = useCallback((content) => {
     setLocalContent(content);
+    console.log(content);
     setDirty(true);
   }, []);
 
@@ -61,7 +62,10 @@ export default function NoteEditor({ note }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await updateNote(note.id, { title: localTitle, content: localContent });
+    await updateNote(note.id, {
+      title: localTitle,
+      content_markdown: localContent,
+    });
     setSaving(false);
     setDirty(false);
   };
@@ -112,7 +116,7 @@ export default function NoteEditor({ note }) {
       <div className="flex-1 overflow-y-auto">
         <MDXEditor
           key={note.id}
-          markdown={note.content}
+          markdown={note.content_markdown}
           onChange={handleChange}
           plugins={PLUGINS}
           contentEditableClassName="prose max-w-none p-4"

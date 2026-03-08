@@ -1,9 +1,18 @@
-// Firebase Admin SDK initialization — exports db (Firestore) and storage
-const admin = require("firebase-admin");
-const serviceAccount = require("../firestoreServiceAccountKey.json"); // Replace with your path
+// Firebase Admin SDK initialization — exports db (Firestore) and bucket (Cloud Storage)
+import { initializeApp, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import { createRequire } from "module";
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+const require = createRequire(import.meta.url);
+const serviceAccount = require("../firestoreServiceAccountKey.json");
+
+initializeApp({
+  credential: cert(serviceAccount),
 });
 
-const db = admin.firestore();
+const db = getFirestore();
+const bucket = getStorage().bucket("knowledge-base-user-uploaded-files");
+
+export default db;
+export { bucket };
